@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>dev.bluemap</groupId>
+    <artifactId>optimal-loads-secom</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>optimal-loads-secom</name>
+    <description>BlueMap SECOM Wrapper for Optimal-LOADS Weather Service</description>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+
+    <!-- SECOMLib이 배포된 GRAD Nexus 저장소 -->
+    <repositories>
+        <repository>
+            <id>grad</id>
+            <url>https://rnavlab.gla-rad.org/mvn/repository/grad/</url>
+        </repository>
+        <repository>
+            <id>grad-snapshots</id>
+            <url>https://rnavlab.gla-rad.org/mvn/repository/grad-snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Spring Boot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring WebFlux (WebClient용 - SECOMLib 클라이언트 내부 사용) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- SECOMLib - Jakarta 네임스페이스 코어 -->
+        <dependency>
+            <groupId>org.grad.secom</groupId>
+            <artifactId>secom-core-jakarta</artifactId>
+            <version>0.0.24</version>
+        </dependency>
+
+        <!-- SECOMLib - Spring Boot 3 통합 모듈 -->
+        <dependency>
+            <groupId>org.grad.secom</groupId>
+            <artifactId>secom-springboot3</artifactId>
+            <version>0.0.24</version>
+        </dependency>
+
+        <!-- HTTP 클라이언트 (기상 API 호출용) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- Lombok (코드 간결화) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JSON 처리 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- 테스트 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
