@@ -1,3 +1,5 @@
+// Capability Controller.java
+
 package dev.bluemap.secom.controller;
 
 import jakarta.ws.rs.Path;
@@ -50,7 +52,7 @@ public class CapabilityController implements CapabilitySecomInterface {
         CapabilityObject capabilityObject = new CapabilityObject();
         // S412: Weather Overlay - 우리 기상 데이터에 가장 적합한 타입
         // S413: Marine Weather Conditions 도 고려 가능
-        capabilityObject.setDataProductType(SECOM_DataProductType.S412);
+        capabilityObject.setDataProductType(SECOM_DataProductType.S413);
         capabilityObject.setContainerType(ContainerTypeEnum.S100_DataSet);
         capabilityObject.setImplementedInterfaces(implementedInterfaces);
         capabilityObject.setServiceVersion(serviceVersion);

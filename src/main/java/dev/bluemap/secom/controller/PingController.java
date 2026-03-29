@@ -1,3 +1,5 @@
+// Ping Controller.java
+
 package dev.bluemap.secom.controller;
 
 import jakarta.ws.rs.Path;
@@ -6,6 +8,8 @@ import org.grad.secom.core.interfaces.PingSecomInterface;
 import org.grad.secom.core.models.PingResponseObject;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * SECOM Ping 컨트롤러
@@ -32,8 +36,7 @@ public class PingController implements PingSecomInterface {
         log.debug("Ping 요청 수신");
 
         PingResponseObject response = new PingResponseObject();
-        // PingResponseObject는 내부적으로 현재 타임스탬프를 포함함
-        // G1191: "HTTP status 200 and message content must be the current timestamp"
+        response.setLastPrivateInteractionTime(LocalDateTime.now(ZoneOffset.UTC));
 
         log.debug("Ping 응답 반환");
         return response;

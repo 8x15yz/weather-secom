@@ -1,3 +1,5 @@
+// GetController.java
+
 package dev.bluemap.secom.controller;
 
 import dev.bluemap.secom.service.WeatherApiService;
@@ -13,10 +15,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.time.LocalDateTime;  // ← import 변경
 import java.util.Base64;
 import java.util.Collections;
 import java.util.UUID;
+
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 /**
  * SECOM Get 컨트롤러 - 핵심 엔드포인트
@@ -66,8 +71,8 @@ public class GetController implements GetSecomInterface {
                                   String productVersion,
                                   String geometry,
                                   String unlocode,
-                                  Instant validFrom,
-                                  Instant validTo,
+                                  LocalDateTime validFrom,
+                                  LocalDateTime validTo,
                                   Integer page,
                                   Integer pageSize) {
 
@@ -78,16 +83,19 @@ public class GetController implements GetSecomInterface {
         double[] latLon = parseGeometry(geometry);
         double lat = latLon[0];
         double lon = latLon[1];
-        double bufferKm = 50.0; // 기본값 50km
+        double bufferKm = 20.0; // 기본값 50km
 
         // 2. 기상 API 호출 시각 결정
-        Instant queryTime = validFrom != null ? validFrom : Instant.now();
 
         // 3. 기상 데이터 조회 (기본 변수: DIRPW 파도 방향)
         // TODO: dataProductType이나 다른 파라미터에 따라 variable 선택 로직 추가 가능
         String weatherVariable = "DIRPW";
-        String weatherJson = weatherApiService.getCurrentWeatherData(
-                weatherVariable, lat, lon, bufferKm);
+        Instant queryTime = validFrom != null
+                ? validFrom.toInstant(ZoneOffset.UTC)
+                : Instant.parse("2025-07-01T00:00:00Z");
+
+        String weatherJson = weatherApiService.getWeatherData(
+                weatherVariable, lat, lon, bufferKm, queryTime, 0);
 
         // 4. 기상 데이터 → Base64 인코딩
         // SECOM 표준: data 필드는 byte[] (Base64로 직렬화됨)

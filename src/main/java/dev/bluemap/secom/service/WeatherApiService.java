@@ -1,3 +1,5 @@
+// WeatherApiService.java
+
 package dev.bluemap.secom.service;
 
 import lombok.extern.slf4j.Slf4j;
