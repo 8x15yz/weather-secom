@@ -1,0 +1,54 @@
+name: Deploy SECOM Terminals
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SECOM_EC2_HOST }}
+          username: ${{ secrets.SECOM_EC2_USER }}
+          key: ${{ secrets.SECOM_EC2_SSH_KEY }}
+          port: 22
+          command_timeout: 20m
+          script: |
+            set -e
+
+            PROJECT_ROOT="$HOME/weather-secom"
+
+            # ── 1. 코드 받기 ──────────────────────────────────────────
+            if [ ! -d "$PROJECT_ROOT" ]; then
+              git clone https://github.com/${{ secrets.GH_REPO_SECOM }}.git "$PROJECT_ROOT"
+            else
+              cd "$PROJECT_ROOT"
+              git fetch origin
+              git checkout -B main origin/main
+              git pull origin main
+            fi
+
+            cd "$PROJECT_ROOT"
+
+            # ── 2. 기존 컨테이너 제거 ────────────────────────────────
+            sudo docker rm -f weather-secom ecs-secom 2>/dev/null || true
+
+            # ── 3. 빌드 & 실행 ───────────────────────────────────────
+            sudo docker compose up -d --build
+
+            # ── 4. 기동 확인 ─────────────────────────────────────────
+            echo "Waiting for JVM startup..."
+            sleep 30
+            sudo docker ps | grep weather-secom
+            sudo docker ps | grep ecs-secom
+            curl -sf http://localhost:8766/api/secom/v1/ping && echo "✓ weather-secom ping OK" || echo "✗ weather-secom ping failed"
+            curl -sf http://localhost:8767/api/secom/v1/ping && echo "✓ ecs-secom ping OK"     || echo "✗ ecs-secom ping failed"
