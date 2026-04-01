@@ -1,6 +1,0 @@
-dev\bluemap\secom\SecomApplication.class
-dev\bluemap\secom\controller\GetController.class
-dev\bluemap\secom\service\WeatherApiService.class
-dev\bluemap\secom\provider\SecomSignatureProviderImpl.class
-dev\bluemap\secom\controller\CapabilityController.class
-dev\bluemap\secom\controller\PingController.class
