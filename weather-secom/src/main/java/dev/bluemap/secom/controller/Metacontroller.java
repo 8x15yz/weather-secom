@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
  * GET /api/meta/sources   → Python API /api/sources
  * GET /api/meta/variables → Python API /api/variables?source=
  *
- * ecs-secom이 이 엔드포인트를 호출해서 Web-ECDIS로 전달함.
+ * ecs-secom 이 이 엔드포인트를 호출해서 Web-ECDIS로 전달함.
  */
 @RestController
 @RequestMapping("/api/meta")
