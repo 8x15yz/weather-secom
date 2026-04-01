@@ -29,7 +29,7 @@ jobs:
 
             # ── 1. 코드 받기 ──────────────────────────────────────────
             if [ ! -d "$PROJECT_ROOT" ]; then
-              git clone https://github.com/${{ secrets.GH_REPO_SECOM }}.git "$PROJECT_ROOT"
+              git clone https://github.com/8x15yz/weather-secom.git "$PROJECT_ROOT"
             else
               cd "$PROJECT_ROOT"
               git fetch origin
