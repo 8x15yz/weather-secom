@@ -1,57 +1,66 @@
-// SecomSignatureProviderImpl.java
-
 package dev.bluemap.secom.provider;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.grad.secom.core.base.DigitalSignatureCertificate;
 import org.grad.secom.core.base.SecomSignatureProvider;
 import org.grad.secom.core.models.enums.DigitalSignatureAlgorithmEnum;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/**
- * [로컬 개발용] 서명 없이 동작하는 더미 Signature Provider
- *
- * SECOMLib은 SecomSignatureProvider 빈이 반드시 있어야 구동됨.
- * 실제 MIR 인증서 발급 전까지 이 클래스를 사용.
- *
- * TODO: 인증서 발급 후 실제 서명 로직으로 교체 필요
- */
+import java.io.InputStream;
+import java.security.*;
+import java.security.cert.X509Certificate;
+
 @Component
 @Slf4j
 public class SecomSignatureProviderImpl implements SecomSignatureProvider {
 
-    /**
-     * 서명 생성
-     * - 로컬 테스트 단계: null 반환 (서명 없음)
-     * - MSR 등록 후: 실제 private key로 서명
-     */
-    @Override
-    public byte[] generateSignature(DigitalSignatureCertificate signatureCertificate,
-                                    DigitalSignatureAlgorithmEnum algorithm,
-                                    byte[] payload) {
-        log.debug("[DEV MODE] 서명 생성 스킵 - 실제 배포 전 인증서 교체 필요");
-        // TODO: 인증서 발급 후 아래 코드로 교체
-        // try {
-        //     Signature sign = Signature.getInstance(algorithm.getValue());
-        //     sign.initSign(this.privateKey);
-        //     sign.update(payload);
-        //     return sign.sign();
-        // } catch (Exception ex) { ... }
-        return null;
+    @Value("${secom.security.ssl.keystore-password}")
+    private String keystorePassword;
+
+    private PrivateKey privateKey;
+    private X509Certificate certificate;
+
+    @PostConstruct
+    public void init() throws Exception {
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        try (InputStream is = getClass().getClassLoader()
+                .getResourceAsStream("keystore.p12")) {
+            if (is == null) throw new IllegalStateException("keystore.p12 를 찾을 수 없음");
+            ks.load(is, keystorePassword.toCharArray());
+        }
+        String alias = "1";  // keytool로 확인한 alias
+        privateKey  = (PrivateKey)      ks.getKey(alias, keystorePassword.toCharArray());
+        certificate = (X509Certificate) ks.getCertificate(alias);
+        log.info("MCP 인증서 로드 완료: subject={}", certificate.getSubjectX500Principal());
     }
 
-    /**
-     * 서명 검증
-     * - 로컬 테스트 단계: 항상 true 반환
-     * - MSR 등록 후: 실제 인증서로 검증
-     */
     @Override
-    public boolean validateSignature(String signatureCertificate,
+    public byte[] generateSignature(DigitalSignatureCertificate sigCert,
+                                    DigitalSignatureAlgorithmEnum algorithm,
+                                    byte[] payload) {
+        try {
+            Signature sig = Signature.getInstance("SHA384withECDSA");
+            sig.initSign(privateKey);
+            sig.update(payload);
+            byte[] signed = sig.sign();
+            log.debug("서명 생성 완료: {}bytes", signed.length);
+            return signed;
+        } catch (Exception e) {
+            log.error("서명 생성 실패", e);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean validateSignature(String certPem,
                                      DigitalSignatureAlgorithmEnum algorithm,
                                      byte[] signature,
                                      byte[] content) {
-        log.debug("[DEV MODE] 서명 검증 스킵 - 항상 true 반환");
+        // 상대방 인증서 검증은 truststore 설정 후 구현 예정
+        // 지금은 MCP CA 신뢰체인 검증 스킵
+        log.debug("서명 검증 (truststore 미설정으로 스킵)");
         return true;
     }
 }
