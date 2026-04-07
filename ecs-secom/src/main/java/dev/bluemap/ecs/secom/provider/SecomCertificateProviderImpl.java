@@ -1,0 +1,42 @@
+package dev.bluemap.secom.provider; // ecs-secom은 dev.bluemap.ecs.secom.provider
+
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
+import org.grad.secom.core.base.DigitalSignatureCertificate;
+import org.grad.secom.core.base.SecomCertificateProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+
+@Component
+@Slf4j
+public class SecomCertificateProviderImpl implements SecomCertificateProvider {
+
+    @Value("${secom.security.ssl.keystore-password}")
+    private String keystorePassword;
+
+    private X509Certificate certificate;
+
+    @PostConstruct
+    public void init() throws Exception {
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        try (InputStream is = getClass().getClassLoader()
+                .getResourceAsStream("keystore.p12")) {
+            if (is == null) throw new IllegalStateException("keystore.p12 를 찾을 수 없음");
+            ks.load(is, keystorePassword.toCharArray());
+        }
+        certificate = (X509Certificate) ks.getCertificate("1");
+        log.info("SECOM 인증서 Provider 로드 완료: subject={}", certificate.getSubjectX500Principal());
+    }
+
+    @Override
+    public DigitalSignatureCertificate getDigitalSignatureCertificate() {
+        DigitalSignatureCertificate dsc = new DigitalSignatureCertificate();
+        dsc.setCertificateAlias("1");
+        dsc.setCertificate(certificate);
+        return dsc;
+    }
+}
