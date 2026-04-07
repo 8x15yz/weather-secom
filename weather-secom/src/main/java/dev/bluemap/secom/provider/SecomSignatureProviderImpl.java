@@ -1,3 +1,5 @@
+// weather-secom > SecomSignatureProviderImpl.java
+
 package dev.bluemap.secom.provider;
 
 import jakarta.annotation.PostConstruct;
@@ -62,5 +64,18 @@ public class SecomSignatureProviderImpl implements SecomSignatureProvider {
         // 지금은 MCP CA 신뢰체인 검증 스킵
         log.debug("서명 검증 (truststore 미설정으로 스킵)");
         return true;
+    }
+
+    @Override
+    public DigitalSignatureCertificate getDigitalSignatureCertificate() {
+        try {
+            DigitalSignatureCertificate dsc = new DigitalSignatureCertificate();
+            dsc.setCertificateAlias("1");
+            dsc.setCertificate(certificate);
+            return dsc;
+        } catch (Exception e) {
+            log.error("인증서 반환 실패", e);
+            return null;
+        }
     }
 }
