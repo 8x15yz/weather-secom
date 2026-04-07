@@ -80,7 +80,7 @@ public class GetController implements GetSecomInterface {
         WeatherParams params = parseProductVersion(productVersion);
 
         // 2. validFrom → run_time_utc
-        Instant runTimeUtc = parseValidFrom(validFrom);
+        Instant runTimeUtc = params.runTime != null ? params.runTime : parseValidFrom(validFrom);
 
         // 3. geometry 파싱 → 좌표 방식 결정
         String weatherJson;
@@ -252,16 +252,20 @@ public class GetController implements GetSecomInterface {
         }
 
         try {
-            String[] parts = productVersion.split(":", -1); // -1: 빈 문자열 유지
+            String[] parts = productVersion.split(":", -1);
             if (parts.length >= 1 && !parts[0].isBlank()) params.source      = parts[0];
             if (parts.length >= 2 && !parts[1].isBlank()) params.datasetCode = parts[1];
             if (parts.length >= 3 && !parts[2].isBlank()) params.model       = parts[2];
             if (parts.length >= 4 && !parts[3].isBlank()) params.variable    = parts[3];
             if (parts.length >= 5 && !parts[4].isBlank()) params.stepHours   = Integer.parseInt(parts[4]);
             if (parts.length >= 6 && !parts[5].isBlank()) params.bufferKm    = Double.parseDouble(parts[5]);
+            if (parts.length >= 7 && !parts[6].isBlank()) {  // ← 여기 추가
+                try { params.runTime = Instant.parse(parts[6]); }
+                catch (Exception ignored) {}
+            }
 
-            log.debug("productVersion 파싱: source={}, model={}, variable={}, step={}, buffer={}km",
-                    params.source, params.model, params.variable, params.stepHours, params.bufferKm);
+            log.debug("productVersion 파싱: source={}, model={}, variable={}, step={}, buffer={}km, runTime={}",
+                    params.source, params.model, params.variable, params.stepHours, params.bufferKm, params.runTime);
         } catch (Exception e) {
             log.warn("productVersion 파싱 실패: '{}' - 기본값 사용", productVersion);
         }
@@ -276,5 +280,6 @@ public class GetController implements GetSecomInterface {
         String variable;
         int    stepHours;
         double bufferKm;
+        Instant runTime;  // ← 추가
     }
 }

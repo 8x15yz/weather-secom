@@ -37,6 +37,7 @@ public class SecomCertificateProviderImpl implements SecomCertificateProvider {
         DigitalSignatureCertificate dsc = new DigitalSignatureCertificate();
         dsc.setCertificateAlias("1");
         dsc.setCertificate(certificate);
+        dsc.setRootCertificate(certificate)
         return dsc;
     }
 }
